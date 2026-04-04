@@ -258,22 +258,6 @@ curl -X POST http://localhost:8080/scrape \
   -d '{"urls": ["https://example.com"]}'
 ```
 
-### Docker Support (Optional)
-
-```dockerfile
-FROM golang:1.21-alpine
-
-# Install Chrome for headless mode
-RUN apk add --no-cache chromium
-
-WORKDIR /app
-COPY . .
-RUN go build -o scraper-api cmd/scraper-api/main.go
-
-EXPOSE 8080
-CMD ["./scraper-api"]
-```
-
 ## License
 
 MIT License
