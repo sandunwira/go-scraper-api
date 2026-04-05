@@ -2,11 +2,12 @@ package scraper
 
 import (
 	"context"
+	"os"
 	"strings"
 	"time"
 
-	"github.com/chromedp/chromedp"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/chromedp"
 )
 
 // fetchAndParseWithHeadless uses Chrome headless browser to render JavaScript
@@ -17,7 +18,7 @@ func fetchAndParseWithHeadless(url string, waitTimeMs int) ScrapingResult {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Create Chrome instance
+	// Create Chrome instance with custom path if available
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-gpu", true),
@@ -25,6 +26,11 @@ func fetchAndParseWithHeadless(url string, waitTimeMs int) ScrapingResult {
 		chromedp.Flag("disable-dev-shm-usage", true),
 		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"),
 	)
+
+	// Check for custom Chrome/Chromium path from environment
+	if chromePath := os.Getenv("CHROME_PATH"); chromePath != "" {
+		opts = append(opts, chromedp.ExecPath(chromePath))
+	}
 
 	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
 	defer cancel()
@@ -83,9 +89,9 @@ func fetchAndParseWithHeadless(url string, waitTimeMs int) ScrapingResult {
 
 	return ScrapingResult{
 		URL:                   url,
-			Success:               true,
-			Content:               text,
-			ExtractionTimeSeconds: extractionTime,
-			Timestamp:             time.Now(),
+		Success:               true,
+		Content:               text,
+		ExtractionTimeSeconds: extractionTime,
+		Timestamp:             time.Now(),
 	}
 }
