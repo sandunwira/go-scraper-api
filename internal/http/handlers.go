@@ -7,6 +7,15 @@ import (
 	"go-scraper-api/internal/scraper"
 )
 
+func RootHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Hello from Crawler!",
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
 func ScrapeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "only POST allowed", http.StatusMethodNotAllowed)
