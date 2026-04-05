@@ -244,7 +244,8 @@ Failed scrapes return partial results with error details:
 ### Building
 
 ```bash
-go build -o scraper-api cmd/scraper-api/main.go
+go build -o app cmd/scraper-api/main.go
+./app
 ```
 
 ### Testing
