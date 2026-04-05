@@ -44,6 +44,6 @@ echo "CHROME_PATH=$CHROME_PATH"
 
 # Build the Go application
 echo "Building Go application..."
-go build -o scraper-api cmd/scraper-api/main.go
+go build -o app cmd/scraper-api/main.go
 
 echo "Build complete!"

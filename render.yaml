@@ -3,7 +3,7 @@ services:
     name: go-scraper-api
     env: go
     buildCommand: ./build.sh
-    startCommand: ./scraper-api
+    startCommand: ./app
     envVars:
       - key: CHROME_PATH
         value: /opt/render/.chrome/chrome-linux/chrome
