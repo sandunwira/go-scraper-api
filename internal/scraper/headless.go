@@ -10,6 +10,34 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+// findChromePath looks for Chrome/Chromium in common locations
+func findChromePath() string {
+	// Check environment variable first
+	if path := os.Getenv("CHROME_PATH"); path != "" {
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+
+	// Common Chrome/Chromium paths
+	candidates := []string{
+		"/opt/render/.chrome/chrome-linux/chrome",
+		"/usr/bin/chromium-browser",
+		"/usr/bin/chromium",
+		"/usr/bin/google-chrome",
+		"/usr/bin/google-chrome-stable",
+		"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+	}
+
+	for _, path := range candidates {
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+
+	return ""
+}
+
 // fetchAndParseWithHeadless uses Chrome headless browser to render JavaScript
 func fetchAndParseWithHeadless(url string, waitTimeMs int) ScrapingResult {
 	startTime := time.Now()
@@ -18,19 +46,31 @@ func fetchAndParseWithHeadless(url string, waitTimeMs int) ScrapingResult {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Create Chrome instance with custom path if available
+	// Find Chrome path
+	chromePath := findChromePath()
+	if chromePath == "" {
+		return ScrapingResult{
+			URL:                   url,
+			Success:               false,
+			Content:               "",
+			ExtractionTimeSeconds: time.Since(startTime).Seconds(),
+			Timestamp:             time.Now(),
+			Error:                 "Chrome/Chromium not found. Set CHROME_PATH environment variable.",
+		}
+	}
+
+	// Create Chrome instance with custom path
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.ExecPath(chromePath),
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-gpu", true),
 		chromedp.Flag("no-sandbox", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-setuid-sandbox", true),
+		chromedp.Flag("single-process", true),
+		chromedp.Flag("no-zygote", true),
 		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"),
 	)
-
-	// Check for custom Chrome/Chromium path from environment
-	if chromePath := os.Getenv("CHROME_PATH"); chromePath != "" {
-		opts = append(opts, chromedp.ExecPath(chromePath))
-	}
 
 	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
 	defer cancel()
