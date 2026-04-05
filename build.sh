@@ -1,26 +1,45 @@
 #!/bin/bash
 
-# Build script for Render.com to install Chromium
+# Build script for Render.com to install Chromium (without apt-get)
 
-echo "Installing Chromium for headless scraping..."
+set -e
 
-# Update package lists
-apt-get update -qq
+CHROME_DIR="/opt/render/.chrome"
+CHROME_BIN="$CHROME_DIR/chrome-linux/chrome"
 
-# Install Chromium (headless browser)
-apt-get install -y -qq chromium-browser
-
-# Verify installation
-if command -v chromium-browser &> /dev/null; then
-    echo "Chromium installed successfully at: $(which chromium-browser)"
-    chromium-browser --version
+# Check if Chrome already exists (cached from previous build)
+if [ -f "$CHROME_BIN" ]; then
+    echo "Chromium already exists at $CHROME_BIN"
+    $CHROME_BIN --version || true
 else
-    echo "Failed to install Chromium"
-    exit 1
+    echo "Downloading Chromium for headless scraping..."
+    
+    # Create directory for Chrome
+    mkdir -p "$CHROME_DIR"
+    cd "$CHROME_DIR"
+    
+    # Download Chromium (stable version for Linux x64)
+    CHROME_URL="https://storage.googleapis.com/chromium-browser-snapshots/Linux_x64/1097615/chrome-linux.zip"
+    
+    echo "Downloading Chromium from $CHROME_URL..."
+    curl -sL "$CHROME_URL" -o chrome-linux.zip
+    
+    echo "Extracting Chromium..."
+    unzip -q chrome-linux.zip
+    
+    echo "Setting permissions..."
+    chmod +x chrome-linux/chrome
+    
+    # Verify
+    echo "Chromium installed at: $CHROME_BIN"
+    $CHROME_BIN --version || true
+    
+    # Go back to project root
+    cd "$OLDPWD"
 fi
 
-# Set environment variable for chromedp to find Chrome
-export CHROME_PATH=$(which chromium-browser)
+# Export path for the build
+export CHROME_PATH="$CHROME_BIN"
 echo "CHROME_PATH=$CHROME_PATH"
 
 # Build the Go application

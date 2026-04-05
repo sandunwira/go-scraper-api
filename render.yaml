@@ -6,6 +6,4 @@ services:
     startCommand: ./scraper-api
     envVars:
       - key: CHROME_PATH
-        value: /usr/bin/chromium-browser
-      - key: CHROMEDP_EXEC_ALLOCATOR_DEFAULT
-        value: /usr/bin/chromium-browser
+        value: /opt/render/.chrome/chrome-linux/chrome
