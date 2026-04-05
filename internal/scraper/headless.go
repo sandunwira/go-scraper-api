@@ -99,8 +99,8 @@ func downloadChrome() (string, error) {
 func fetchAndParseWithHeadless(url string, waitTimeMs int) ScrapingResult {
 	startTime := time.Now()
 
-	// Create context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	// Create context with timeout (3 min to allow Chrome download on first run)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
 	// Get Chrome path (find or download)
